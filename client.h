@@ -19,7 +19,7 @@
 #include <errno.h>
 #include "tools.h"
 
-#define pf printf//方便调试，减少代码量
+#define pf printf//方便调试,减少代码量
 
 extern int sockfd;//引用全局变量
 

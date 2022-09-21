@@ -7,7 +7,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-//修改终端的控制方式，干三件事，1. 取消回显、确认　２.获取数据　3.还原
+//修改终端的控制方式,干三件事,1. 取消回显、确认　２.获取数据　3.还原
 int getch(void)
 {
     //用于记录终端的配置信息的结构体
@@ -50,7 +50,7 @@ char* get_str(char* str, size_t len)
 	if(NULL == in)
 		return str;
 	
-	//使用fgets输入时,超过size-1个字符会残留在输入缓冲区中,影响下一次的输入，因此需要处理
+	//使用fgets输入时,超过size-1个字符会残留在输入缓冲区中,影响下一次的输入,因此需要处理
 	size_t cnt = strlen(str);
 	if('\n' == str[cnt-1])
 	{
@@ -62,7 +62,7 @@ char* get_str(char* str, size_t len)
 
 char get_sex(void)
 {
-	printf("（m男，w女）：");
+	printf("（m男,w女）：");
 	while(true)
 	{
 		char sex = getch();
@@ -73,7 +73,7 @@ char get_sex(void)
 		}
 	}
 }
-//用来限制输入，智能输入start到end之间的字符
+//用来限制输入,智能输入start到end之间的字符
 char get_cmd(char start, char end)
 {
 	clear_stdin();
@@ -101,7 +101,7 @@ char* get_pw(char* passwd, bool is_show, size_t size)
 		{
 			if(count > 0)
 			{
-				if(is_show)printf("\b \b");//\b只是移动光标没有删除，需要空格覆盖一下
+				if(is_show)printf("\b \b");//\b只是移动光标没有删除,需要空格覆盖一下
 				count--;
 			}
 			continue;
@@ -118,7 +118,7 @@ char* get_pw(char* passwd, bool is_show, size_t size)
 	return passwd;
 }
 
-// 获取时间，传入type来获取各种格式的时间
+// 获取时间,传入type来获取各种格式的时间
 char* get_time(int type)
 {
 	time_t timep;

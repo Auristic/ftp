@@ -20,9 +20,9 @@
 #include <pthread.h>
 #include "tools.h"
 
-#define pf printf//方便调试，减少代码量
+#define pf printf//方便调试,减少代码量
 
-/*不要在头文件中声明全局变量，不然当多个文件引入同一头文件时就会有变量重复定义错误*/
+/*不要在头文件中声明全局变量,不然当多个文件引入同一头文件时就会有变量重复定义错误*/
 extern char cmd[];//引用全局变量
 
 typedef struct LS

@@ -15,9 +15,9 @@ void *start_run(void *arg)
 	while(1)
 	{
 		c_size = read(*clifd, cmd, sizeof(cmd));
-		if(-1 == c_size)
+		if(c_size == -1)
 		{
-			pf("[%s] read函数出错！\n", get_time(2));
+			pf("[%s] read函数出错!\n", get_time(2));
 		}
 		
 		if (strcmp(up, cmd) == 0)
@@ -41,25 +41,23 @@ void *start_run(void *arg)
 		else if (strcmp(quit, cmd) == 0)
 		{
 			pf("[%s] 收到服务端的退出指令\n", get_time(2));
-			pthread_exit(0);
+			pthread_exit(0);//结束线程
 			return (void *)NULL;
 		}
 		
 	}
-	//char *str = "我死了";
-	//pthread_exit(str);
 }
 
-// 上传
+//上传
 void c_up(int *clifd)
 {
 	int flag = 0;
-	int r_size = 0;
+	int r_size = 0;//read_size
 	int w_size = 0;
 	char buf[1024] = {};
 
 	w_size = write(*clifd, "success", 8);
-	read(*clifd, buf, 10);
+	read(*clifd, buf, 10);//判断客户端用户是否输入了正确的文件名
 	if(strncmp(buf, "error", 10) == 0)
 	{
 		printf("[%s] 收到客户端返回error,接收终止\n", get_time(2));
@@ -75,38 +73,38 @@ void c_up(int *clifd)
 		return;
 	}
 
-	// 用于存储文件名，长度50，不够则需要自行加长
+	//用于存储文件名,长度50字节
 	char filename[50] = {};
 	memset(filename, 0, sizeof(filename));
-	// 发送success给客户端，告知客户端可以传输文件名
+	//发送success给客户端,告知客户端可以传输文件名
 	w_size = write(*clifd, "success", 8);
 	int f_size = read(*clifd, filename, sizeof(filename));
-	if(-1 == f_size)
+	if(f_size == -1)
 	{
-		pf("[%s] read函数出错！\n", get_time(2));
+		pf("[%s] read函数出错!\n", get_time(2));
 	}
 	pf("[%s] 收到文件名:%s\n", get_time(2), filename);
 	usleep(1000);
 
-	// 传回文件名，用于数据可靠性校验
+	//传回文件名,用于数据可靠性校验
 	w_size = write(*clifd, filename, strlen(filename) + 1);
-	// 读取客户端返回的结果
+	//读取客户端返回的结果
 	r_size = read(*clifd, buf, sizeof(buf));
 	if(strncmp(buf, "success", 7) == 0)
 	{
-		pf("[%s] 文件名校验成功，准备接收文件\n", get_time(2));
+		pf("[%s] 文件名校验成功,准备接收文件\n", get_time(2));
 	}
 	else
 	{
-		pf("[%s] 文件名校验失败，终止接收文件\n", get_time(2));
+		pf("[%s] 文件名校验失败,终止接收文件\n", get_time(2));
 		return;
 	}
 
-	// 发送success给客户端，告知可以开始文件传输
+	//发送success给客户端,告知可以开始文件传输
 	w_size = write(*clifd, "success", 8);
-	pf("[%s] 发送success给客户端，可以开始文件传输\n", get_time(2));
+	pf("[%s] 发送success给客户端,可以开始文件传输\n", get_time(2));
 
-	int fd = open(filename, O_CREAT | O_RDWR, 0777);
+	int fd = open(filename, O_CREAT | O_RDWR, 0777);//读写模式打开/新建文件
 
 	do
 	{
@@ -130,20 +128,20 @@ void c_up(int *clifd)
 	if (flag > 0)
 	{
 		char result[20] = "success";
-		pf("[%s]     文件传输完毕 返回客户端success\n\n", get_time(2));
+		pf("[%s]     文件传输完毕 返回客户端success\n", get_time(2));
 		write(*clifd, result, strlen(result) + 1);
 	}
 	else
 	{
 		char result[20] = "error";
-		pf("[%s]     文件传输失败 返回客户端error\n\n", get_time(2));
+		pf("[%s]     文件传输失败 返回客户端error\n", get_time(2));
 		write(*clifd, result, strlen(result) + 1);
 	}
 	close(fd);
 	return;
 }
 
-// 下载
+//下载
 void c_down(int *clifd)
 {
 	DIR *dir;
@@ -162,10 +160,10 @@ void c_down(int *clifd)
 	r_size = read(*clifd, buf, sizeof(buf));
 	if(strncmp(buf, "success", 8) == 0)
 	{
-		pf("[%s] 收到客户端success信息，可以进行目录列表发送\n", get_time(2));
+		pf("[%s] 收到客户端success信息,可以进行目录列表发送\n", get_time(2));
 	}
 
-	// 获取目录下所有文件名
+	//获取目录下所有文件名
 	while ((dirent = readdir(dir)) != NULL)
 	{
 		strcat(list, dirent->d_name);
@@ -174,17 +172,18 @@ void c_down(int *clifd)
 	pf("当前目录列表:%s\n", list);
 	pf("strlen(list):%d\n", (int)strlen(list));
 	int l_size = write(*clifd, list, strlen(list)+1);
-	if(-1 == l_size)
+	if(l_size == -1)
 	{
-		pf("[%s] read函数出错！\n", get_time(2));
+		pf("[%s] read函数出错!\n", get_time(2));
+		return;
 	}
 	pf("[%s] 发送当前下载目录列表给客户端\n", get_time(2));
 
 	pf("[%s] 等待接收文件名...\n", get_time(2));
 	int f_size = read(*clifd, filename, sizeof(filename));
-	if(-1 == f_size)
+	if(f_size == -1)
 	{
-		pf("[%s] read函数出错！\n", get_time(2));
+		pf("[%s] read函数出错!\n", get_time(2));
 	}
 	//pf("filename:%s\n", filename);
 	strncpy(filename2, filename, 50);
@@ -204,7 +203,7 @@ void c_down(int *clifd)
 		write(*clifd, result, strlen(result));
 
 		memset(buf, 0, sizeof(buf));
-		snprintf(buf, 150, "ls -ll %s | awk '{print $5}'", filename);
+		snprintf(buf, 150, "ls -l %s | awk '{print $5}'", filename);//获取下载文件大小
 		FILE* temp_fp = NULL;
 		temp_fp = popen(buf, "r");
 		if (temp_fp == NULL)
@@ -264,7 +263,7 @@ void c_down(int *clifd)
 				break;
 			}
 		} while (r_size == 1024);
-		usleep(1000000);
+		sleep(1);
 		pf("[%s]     文件:%s 发送完毕\n", get_time(2), filename);
 		close(fd);
 	}
@@ -272,7 +271,7 @@ void c_down(int *clifd)
 	return;
 }
 
-// 文件列表
+//文件列表
 void c_list(int *clifd)
 {
 	DIR *dir;
@@ -286,18 +285,18 @@ void c_list(int *clifd)
 	}
 
 	int l_size = write(*clifd, list, strlen(list) + 1);
-	if(-1 == l_size)
+	if(l_size == -1)
 	{
-		pf("[%s] write函数出错！\n", get_time(2));
+		pf("[%s] write函数出错!\n", get_time(2));
 	}
 
 	memset(list, 0, 1024);
 
 	char dirname[20] = {};
 	int d_size = read(*clifd, dirname, sizeof(dirname));
-	if(-1 == d_size)
+	if(d_size == -1)
 	{
-		pf("[%s] read函数出错！\n", get_time(2));
+		pf("[%s] read函数出错!\n", get_time(2));
 	}
 	pf("[%s] 收到客户端的数据:%s\n", get_time(2), dirname);
 
@@ -335,9 +334,9 @@ void c_list(int *clifd)
 		{
 			char result[20] = "目录名错误";
 			int err = write(*clifd, result, strlen(result) + 1);
-			if(-1 == err)
+			if(err == -1)
 			{
-				pf("[%s] write函数出错！\n", get_time(2));
+				pf("[%s] write函数出错!\n", get_time(2));
 			}
 		}
 		else

@@ -3,7 +3,7 @@
 int main()
 {
 	pf("[%s] 创建客户端socket...\n", get_time(2));
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);//创建socket,ipv4通信，TCP协议
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);//创建socket,ipv4通信,TCP协议
 	
 	if (sockfd == -1)
 	{

@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-//修改终端的控制方式，1.取消回显、确认　２.获取数据　3.还原
+//修改终端的控制方式,1.取消回显、确认　２.获取数据　3.还原
 int getch(void);
 //清除输入缓存
 void clear_stdin(void);
@@ -22,7 +22,7 @@ char get_sex(void);
 char get_cmd(char start, char end);
 //返回处理后的密码
 char* get_pw(char* passwd, bool is_show, size_t size);
-// 获取时间，传入type来获取各种时间
+// 获取时间,传入type来获取各种时间
 char* get_time(int type);
 
 #endif//TOOL_h

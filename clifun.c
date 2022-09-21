@@ -35,13 +35,12 @@ void menu(void)
 	while(1)
 	{
 		system("clear");//清屏
-		pf("=======================MENU=======================\n");
-		pf("	Enter '1' : upload    Enter '2' : download    \n");
-		pf("	Enter '2' : list server directory             \n");
-		pf("	Enter '3' : list/change server directory      \n");
-		pf("	Enter '4' : list client directory             \n");
-		pf("	Enter '0' : EXIT                              \n");
-		pf("==================================================\n");
+		pf("===================== 主菜单 =======================\n");
+		pf("	Enter '1' : 上传    Enter '2' : 下载            \n");
+		pf("	Enter '3' : 查看/修改服务端目录                  \n");
+		pf("	Enter '4' : 查看客户端目录                       \n");
+		pf("	Enter '0' : 退出                                \n");
+		pf("====================================================\n");
 		
 		
 		//得到 0 ~ 4 之间的字符
@@ -96,18 +95,13 @@ void upload(void)
 		get_str(pathname, 100);
 		if(!strncmp(pathname, "..", 3) || !strncmp(pathname, ".", 3))
 		{
-			pf(".或..不是普通文件，请重新输入！\n");
+			pf(".或..不是普通文件,请重新输入!\n");
 			continue;
 		}
 		break;
 	}	
 
-	int fd = open(pathname, O_RDONLY);
-
-	// struct stat stat = {};
-	// int fs = fstat(fd, &stat);
-	// long file_size = 0;
-	// file_size = stat.st_size;
+	int fd = open(pathname, O_RDONLY);//只读模式
 
 	if (fd == -1)
 	{
@@ -121,7 +115,7 @@ void upload(void)
 		r_size = read(sockfd, buf, sizeof(buf));
 		if(strncmp(buf, "success", 8) == 0)
 		{
-			pf("[%s] 服务端已经可以接收文件，准备发送文件名\n", get_time(2));
+			pf("[%s] 服务端已经可以接收文件,准备发送文件名\n", get_time(2));
 		}
 
 		if (strrchr(pathname, '/') == NULL)
@@ -130,26 +124,26 @@ void upload(void)
 		}
 		else
 		{
-			filename = strrchr(pathname, '/');
+			filename = strrchr(pathname, '/');//截取最后一个'/'后面的文件名
 			filename += 1;
 		}
 
 		pf("[%s] 发送文件名:%s 至服务端\n", get_time(2), filename);
 		write(sockfd, filename, strlen(filename) + 1);
 
-		// 读取服务端返回的文件名，用于判断服务端是否获取到正确的用户名
+		//读取服务端返回的文件名,用于判断服务端是否获取到正确的用户名
 		r_size = read(sockfd, buf, sizeof(buf));
 		if(strncmp(buf, filename, strlen(filename)) == 0)
 		{
-			// 发送success给服务端，准备接收文件数据
+			//发送success给服务端,准备接收文件数据
 			write(sockfd, "success", 8);
-			pf("[%s] 校验服务端接收到的文件名成功，准备开始文件传输\n", get_time(2));
+			pf("[%s] 校验服务端接收到的文件名成功,准备开始文件传输\n", get_time(2));
 		}
 		else
 		{
-			// 发送failed给服务端，终止接收文件
+			// 发送failed给服务端,终止接收文件
 			write(sockfd, "failed", 7);
-			pf("[%s] 校验服务端接收到的文件名失败，文件传输终止\n", get_time(2));
+			pf("[%s] 校验服务端接收到的文件名失败,文件传输终止\n", get_time(2));
 			return;
 		}
 		r_size = 0;
@@ -164,14 +158,14 @@ void upload(void)
 		}
 		else
 		{
-			pf("[%s] 收到服务端返回success，可以开始文件传输\n", get_time(2));
+			pf("[%s] 收到服务端返回success,可以开始文件传输\n", get_time(2));
 		}
 		
 		sleep(1);
 
 		memset(buf, 0, sizeof(buf));
-		snprintf(buf, 150, "ls -ll %s | awk '{print $5}'", pathname);
-		FILE* temp_fp = NULL;
+		snprintf(buf, 150, "ls -l %s | awk '{print $5}'", pathname);//第五列值（即文件大小,字节为单位）
+		FILE* temp_fp = NULL;//指向的文件存放上传文件大小
 		temp_fp = popen(buf, "r");
 		if (temp_fp == NULL)
 		{
@@ -193,7 +187,7 @@ void upload(void)
 
 		do
 		{
-			//pf("  进入while循环...\n");
+			//pf("进入while循环...\n");
 			r_size = read(fd, buf, 1024);
 
 			pf("[读取文件字节数:%d ", r_size);
@@ -253,7 +247,7 @@ void upload(void)
 	return;
 }
 
-// 下载
+//下载
 void download(void)
 {
 	int r_size = 0;
@@ -276,7 +270,7 @@ void download(void)
 		pf("[%s] 服务端成功接收命令\n", get_time(2));
 	}
 
-	// 发送给服务端success，告知可以开始目录列表的发送
+	//发送给服务端success,告知可以开始目录列表的发送
 	write(sockfd, "success", 8);
 	read(sockfd, list, sizeof(list));
 	pf("服务端目录列表:%s\n", list);
@@ -289,7 +283,7 @@ void download(void)
 		get_str(filename, 50);
 		if(!strncmp(filename, "..", 3) || !strncmp(filename, ".", 3))
 		{
-			pf(".或..不是普通文件，无法下载，请重新输入！\n");
+			pf(".或..不是普通文件,无法下载,请重新输入!\n");
 			continue;		
 		}
 		break;
@@ -305,12 +299,14 @@ void download(void)
 	else if(strncmp(result, "error", 8) == 0)
 	{
 		pf("[%s] 收到服务端发送的数据:%s 文件不存在\n", get_time(2), result);
+		pf("按任意键继续");
 		getch();
 		return;
 	}
 	else
 	{
 		pf("[%s] 收到服务端发送的数据:%s 数据异常,下载终止\n", get_time(2), result);
+		pf("按任意键继续");
 		getch();
 		return;
 	}
@@ -335,7 +331,7 @@ void download(void)
 	return;
 }
 
-// 服务端文件列表
+//服务端文件列表
 void s_list(void)
 {
 	char see[20] = "我想看你";
@@ -345,12 +341,12 @@ void s_list(void)
 	read(sockfd, list, sizeof(list));
 	pf("服务端目录列表: %s\n", list);
 
-	pf("输入cd+空格+目录，修改服务器工作目录，否则返回上一级\n");
+	pf("输入cd+空格+目录,修改服务器工作目录,否则返回上一级\n");
 	char cmd[50] = {};
 	get_str(cmd, 50);
 	if (strstr(cmd, "cd ") == NULL)
 	{
-		pf("非cd指令，按任意键返回主界面\n");
+		pf("非cd指令,按任意键返回主界面\n");
 		snprintf(cmd, 20, "...");
 		write(sockfd, cmd, strlen(cmd));
 		getch();
@@ -364,12 +360,11 @@ void s_list(void)
 
 		read(sockfd, list, sizeof(list));
 		pf("服务端目录列表: %s\n", list);
-		getch();
 	}
 	return;
 }
 
-// 客户端文件列表
+//客户端文件列表
 void c_list(void)
 {
 	pf("当前目录列表:");
@@ -380,17 +375,16 @@ void c_list(void)
 	{
 		pf(" %s ", dirent->d_name);
 	}
-	pf("\n");
+	pf("\n按任意键继续\n");
 	closedir(dir);
 	getch();
 	return;
 }
 
-// 退出程序
+//退出程序
 void quit(void)
 {
-	// char buf[100] = {};
-	pf("[%s] 告知服务端，我要走了\n", get_time(2));
+	pf("[%s] 告知服务端,我要走了\n", get_time(2));
 	char quit[20] = "我要走了";
 	write(sockfd, quit, strlen(quit) + 1);
 

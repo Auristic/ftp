@@ -3,7 +3,7 @@
 int main()
 {
 	pf("[%s] 服务器创建socket...\n", get_time(2));
-	int sockfd = socket(AF_INET, SOCK_STREAM, 0);//TCP协议，ipv4
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0);//TCP协议,ipv4
 	if (sockfd == -1)
 	{
 		perror("socket error");
@@ -36,7 +36,7 @@ int main()
 	{
 		struct sockaddr_in addrcli = {};//创建客户端地址
 		int *clifd = (int*)malloc(sizeof(int));//创建指向连接客户端套接字描述符的指针
-		*clifd = accept(sockfd, (struct sockaddr *)&addrcli, &len);//接收请求，建立与客户端的连接
+		*clifd = accept(sockfd, (struct sockaddr *)&addrcli, &len);//接收请求,建立与客户端的连接
 		if (*clifd == -1)
 		{
 			perror("accept error");
