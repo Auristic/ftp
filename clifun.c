@@ -31,7 +31,7 @@ void menu(void)
 	pf("   * *           .......             * *          \n");
 	pf("                .........                         \n");
 	pf("               ===========                        \n");
-	sleep(2);
+	getch();
 	while(1)
 	{
 		system("clear");//清屏
@@ -341,7 +341,7 @@ void s_list(void)
 	read(sockfd, list, sizeof(list));
 	pf("服务端目录列表: %s\n", list);
 
-	pf("输入cd+空格+目录,修改服务器工作目录,否则返回上一级\n");
+	pf("输入cd+空格+目录名,修改服务器工作目录,否则返回主菜单\n>>>");
 	char cmd[50] = {};
 	get_str(cmd, 50);
 	if (strstr(cmd, "cd ") == NULL)
@@ -355,11 +355,17 @@ void s_list(void)
 	{
 		char *dir = malloc(20);
 		dir = strrchr(cmd, ' ');
-		dir += 1;
+		dir += 1;//定位目录名
 		write(sockfd, dir, strlen(dir) + 1);
 
 		read(sockfd, list, sizeof(list));
-		pf("服务端目录列表: %s\n", list);
+		if(strncmp(list, "目录名错误", 10) == 0){
+			pf("服务端没有这个目录\n");
+		}else{
+			pf("服务端目录列表: %s\n", list);
+		}
+		pf("按任意键继续");
+		getch();
 	}
 	return;
 }

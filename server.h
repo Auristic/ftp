@@ -18,12 +18,15 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <pthread.h>
+#include<setjmp.h>
+#include<signal.h>
 #include "tools.h"
 
 #define pf printf//方便调试,减少代码量
 
 /*不要在头文件中声明全局变量,不然当多个文件引入同一头文件时就会有变量重复定义错误*/
 extern char cmd[];//引用全局变量
+extern jmp_buf jmpbuf;//跳转的位置
 
 typedef struct LS
 {
@@ -38,8 +41,11 @@ typedef struct LS
 } LS;
 
 /*服务器函数声明*/
-
-// 开始运行
+// SIGNO信号的执行函数
+void sig_quit();
+// 执行退出线程
+void *callback(void *arg);
+// 开始运行线程
 void *start_run(void *arg);
 // 客户端上传
 void c_up(int *clifd);

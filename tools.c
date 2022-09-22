@@ -60,19 +60,6 @@ char* get_str(char* str, size_t len)
 	return str;
 }
 
-char get_sex(void)
-{
-	printf("（m男,w女）：");
-	while(true)
-	{
-		char sex = getch();
-		if('w' == sex || 'm' == sex)
-		{
-			printf("%s\n",'w'==sex?"女":"男");
-			return sex;
-		}
-	}
-}
 //用来限制输入,智能输入start到end之间的字符
 char get_cmd(char start, char end)
 {
@@ -88,34 +75,6 @@ char get_cmd(char start, char end)
 			return val;
 		}
 	}
-}
-
-char* get_pw(char* passwd, bool is_show, size_t size)
-{
-	if(NULL == passwd) return NULL;
-
-	int count = 0;
-	do{
-		char val = getch();
-		if(127 == val)//ASCII码127是DEL删除
-		{
-			if(count > 0)
-			{
-				if(is_show)printf("\b \b");//\b只是移动光标没有删除,需要空格覆盖一下
-				count--;
-			}
-			continue;
-		}
-		else if(10 == val)//ASCII码10是换行符
-		{
-			break;
-		}
-		passwd[count++] = val;
-		if(is_show) printf("*");
-	}while(count < size-1);
-
-	passwd[count] = '\0';
-	return passwd;
 }
 
 // 获取时间,传入type来获取各种格式的时间

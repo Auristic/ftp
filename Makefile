@@ -1,4 +1,4 @@
-FLAG=-Wall -Werror
+FLAG=-Wall -Werror #编译后显示所有警告，将所有的警告当成错误进行处理
 STD=-std=gnu99
 CC=gcc
 

@@ -25,7 +25,7 @@ int main()
 		return -1;
 	}
 
-	menu(); // 加载菜单
+	menu();//加载菜单
 
 	close(sockfd);//关闭套接字
 

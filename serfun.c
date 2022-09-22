@@ -2,6 +2,28 @@
 
 //声明全局变量
 char cmd[20] = {};
+jmp_buf jmpbuf;
+
+//用来执行退出线程，输入q退出程序
+void *callback(void *arg)
+{
+	pid_t* pid = (pid_t *)arg;
+	char q = '\0';
+    // pf("子线程:%ld\n",pthread_self());
+	do{
+		q = getch();
+	}while(q != 'q');
+	kill(*pid, SIGIO);//给主进程发送退出信号
+	// pf("退出子线程\n");
+	// pthread_exit(NULL);
+    return NULL;
+}
+
+//接收SIGNO信号退出程序
+void sig_quit()
+{
+    longjmp(jmpbuf, 1);//就是加强版goto,可以再不同函数间跳转
+}
 
 //开始运行
 void *start_run(void *arg)
@@ -203,7 +225,7 @@ void c_down(int *clifd)
 		write(*clifd, result, strlen(result));
 
 		memset(buf, 0, sizeof(buf));
-		snprintf(buf, 150, "ls -l %s | awk '{print $5}'", filename);//获取下载文件大小
+		snprintf(buf, 150, "ls -l %s | awk '{print $5}'", filename);//获取下载文件大小，awk '{print $5}'输入文件第五列（文件大小）
 		FILE* temp_fp = NULL;
 		temp_fp = popen(buf, "r");
 		if (temp_fp == NULL)
@@ -220,13 +242,13 @@ void c_down(int *clifd)
 
 		//设置文件读写位置为文件尾部
 		lseek(fd, 0, SEEK_END);
-		// 获取文件字节数（尾部位置）
+		//获取文件字节数（尾部位置）
 		off_t end_pos = lseek(fd, 0, SEEK_CUR);
 		//pf("end_pos:%d\n", end_pos);
 		//设置文件读写位置为文件头部
 		lseek(fd, 0, SEEK_SET);
 
-		usleep(1000000);
+		sleep(1);
 
 		do
 		{
@@ -244,6 +266,7 @@ void c_down(int *clifd)
 
 			off_t cur_pos = lseek(fd, 0, SEEK_CUR);
 			//pf("cur_pos:%d\n", cur_pos);
+			//添加结束符'\0'
 			if(cur_pos == end_pos && w_size == 1024)
 			{
 				char end[1] = "\0";
@@ -284,7 +307,7 @@ void c_list(int *clifd)
 		strcat(list, " ");
 	}
 
-	int l_size = write(*clifd, list, strlen(list) + 1);
+	int l_size = write(*clifd, list, strlen(list) + 1);//发送当前目录给客户端
 	if(l_size == -1)
 	{
 		pf("[%s] write函数出错!\n", get_time(2));
@@ -300,13 +323,13 @@ void c_list(int *clifd)
 	}
 	pf("[%s] 收到客户端的数据:%s\n", get_time(2), dirname);
 
-	if(strncmp(dirname, "...", 20) == 0)
+	if(strncmp(dirname, "...", 20) == 0)//非cd指令
 	{
 		closedir(dir);
 		return;
 	}
 
-	if (strncmp(dirname, ".", 20) == 0)
+	if(strncmp(dirname, ".", 20) == 0)
 	{
 		dir = opendir(".");
 		while ((dirent = readdir(dir)) != NULL)
@@ -318,7 +341,7 @@ void c_list(int *clifd)
 	}
 	else if (strncmp(dirname, "..", 20) == 0)
 	{
-		chdir("..");
+		chdir("..");//切换为上级目录
 		dir = opendir(".");
 		while ((dirent = readdir(dir)) != NULL)
 		{
@@ -333,6 +356,7 @@ void c_list(int *clifd)
 		if (re == -1)
 		{
 			char result[20] = "目录名错误";
+			pf("[%s] 是cd指令,但没有这个目录\n", get_time(2));
 			int err = write(*clifd, result, strlen(result) + 1);
 			if(err == -1)
 			{
@@ -341,6 +365,7 @@ void c_list(int *clifd)
 		}
 		else
 		{
+			pf("[%s] 修改服务器目录成功\n", get_time(2));
 			dir = opendir(".");
 			while ((dirent = readdir(dir)) != NULL)
 			{
